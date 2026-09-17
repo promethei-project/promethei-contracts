@@ -29,7 +29,7 @@ on:
 env:
   NETWORK: ${{ inputs.network }}
   CONTRACTS_REVISION: ${{ inputs.contracts_ref }}
-  CONFIG_REPOSITORY: archivist-config
+  CONFIG_REPOSITORY: promethei-config
   CONFIG_REPOSITORY_BRANCH: main
 
 jobs:
@@ -72,8 +72,8 @@ jobs:
 
         env:
           TOKEN_ADDRESS: ${{ inputs.token_address }}
-          ARCHIVIST_DEVNET_URL: ${{ inputs.rpc_endpoint }}
-          ARCHIVIST_DEVNET_PRIVATE_KEY: ${{ secrets.DEVNET_CONTRACTS_DEPLOYER_PRIVATE_KEY }}
+          PROMETHEI_DEVNET_URL: ${{ inputs.rpc_endpoint }}
+          PROMETHEI_DEVNET_PRIVATE_KEY: ${{ secrets.DEVNET_CONTRACTS_DEPLOYER_PRIVATE_KEY }}
           HARDHAT_IGNITION_CONFIRM_RESET: false
           HARDHAT_IGNITION_CONFIRM_DEPLOYMENT: false
 

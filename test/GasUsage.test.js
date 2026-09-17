@@ -24,7 +24,7 @@ const MarketplaceModule = require("../ignition/modules/marketplace")
 // more than a certain percentage.
 // The percentages from these tests should be used to pad the gas estimates in
 // market.nim, for example when calling fillSlot:
-// https://github.com/durability-labs/archivist-node/blob/91f0483360bfb296834129640e18c047a1866157/archivist/contracts/market.nim#L278
+// https://github.com/promethei-project/nim-promethei-node/blob/91f0483360bfb296834129640e18c047a1866157/promethei/contracts/market.nim#L278
 describe("Marketplace gas estimates", function () {
   let marketplace
   let token

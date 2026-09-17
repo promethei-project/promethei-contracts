@@ -1,5 +1,5 @@
 {
-  "name": "archivist-contracts",
+  "name": "promethei-contracts",
   "license": "MIT",
   "scripts": {
     "test": "npm run lint && hardhat test",

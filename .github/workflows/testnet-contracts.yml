@@ -28,9 +28,9 @@ on:
 
 env:
   NETWORK: ${{ inputs.network }}
-  ARCHIVIST_REPOSITORY: archivist-node
-  ARCHIVIST_CONTRACTS_FILE: archivist/marketplace/contracts/deployment.nim
-  CONFIG_REPOSITORY: archivist-config
+  PROMETHEI_REPOSITORY: nim-promethei-node
+  PROMETHEI_CONTRACTS_FILE: promethei/marketplace/contracts/deployment.nim
+  CONFIG_REPOSITORY: promethei-config
   CONFIG_ENDPOINT: https://config.archivist.storage
   CONTRACTS_REPOSITORY: ${{ github.event.repository.name }}
   NODE_VERSION: 22
@@ -42,17 +42,17 @@ jobs:
       contracts_ref: ${{ steps.variables.outputs.contracts_ref }}
       contracts_deploy: ${{ steps.variables.outputs.contracts_deploy }}
     steps:
-      - name: Checkout archivist repository
+      - name: Checkout promethei repository
         uses: actions/checkout@v6
         with:
-          repository: ${{ github.repository_owner }}/${{ env.ARCHIVIST_REPOSITORY }}
+          repository: ${{ github.repository_owner }}/${{ env.PROMETHEI_REPOSITORY }}
           submodules: recursive
 
       - name: Set outputs
         id: variables
         run: |
           # Contracts versions
-          contracts_deployed=$(curl -s ${{ env.CONFIG_ENDPOINT }}/${{ env.NETWORK }}.json | jq -r '.archivist[].contracts')
+          contracts_deployed=$(curl -s ${{ env.CONFIG_ENDPOINT }}/${{ env.NETWORK }}.json | jq -r '.promethei[].contracts')
           contracts_submodule=$(git rev-parse --short HEAD:vendor/${{ env.CONTRACTS_REPOSITORY }})
 
           # Check if contracts-deploy is needed
@@ -101,8 +101,8 @@ jobs:
         run: npm run deploy -- --network "${{ env.NETWORK }}" --deployment-id "${{ env.NETWORK }}" --reset
         env:
           TOKEN_ADDRESS: ${{ inputs.token_address }}
-          ARCHIVIST_TESTNET_URL: ${{ inputs.rpc_endpoint }}
-          ARCHIVIST_TESTNET_PRIVATE_KEY: ${{ secrets.TESTNET_CONTRACTS_DEPLOYER_PRIVATE_KEY }}
+          PROMETHEI_TESTNET_URL: ${{ inputs.rpc_endpoint }}
+          PROMETHEI_TESTNET_PRIVATE_KEY: ${{ secrets.TESTNET_CONTRACTS_DEPLOYER_PRIVATE_KEY }}
           HARDHAT_IGNITION_CONFIRM_RESET: false
           HARDHAT_IGNITION_CONFIRM_DEPLOYMENT: false
 
@@ -218,7 +218,7 @@ jobs:
           reviewers: ${{ github.actor }}
           token: ${{ steps.app-token.outputs.token }}
 
-  archivist-update:
+  promethei-update:
     runs-on: ubuntu-latest
     needs: [contracts-deploy, config-update]
     steps:
@@ -229,32 +229,32 @@ jobs:
           app-id: ${{ secrets.DEPLOYER_APP_ID }}
           private-key: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
-          repositories: ${{ env.ARCHIVIST_REPOSITORY }}
+          repositories: ${{ env.PROMETHEI_REPOSITORY }}
 
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          repository: ${{ github.repository_owner }}/${{ env.ARCHIVIST_REPOSITORY }}
+          repository: ${{ github.repository_owner }}/${{ env.PROMETHEI_REPOSITORY }}
 
       - name: Set variables
-        run: echo "ARCHIVIST_REPOSITORY_BRANCH=$(git remote show origin | awk '/HEAD branch:/ {print $NF}')" >> $GITHUB_ENV
+        run: echo "PROMETHEI_REPOSITORY_BRANCH=$(git remote show origin | awk '/HEAD branch:/ {print $NF}')" >> $GITHUB_ENV
 
       - name: Update marketplace address
         run: |
           # Show
           echo "Chain ID: ${{ needs.contracts-deploy.outputs.chain_id }}"
           echo "Address: ${{ needs.contracts-deploy.outputs.marketplace_address }}"
-          echo "File: ${{ env.ARCHIVIST_CONTRACTS_FILE }}"
+          echo "File: ${{ env.PROMETHEI_CONTRACTS_FILE }}"
 
           # Replace comment
           network="testnet"
           date=$(date -u +'%Y-%m-%d %H:%M:%S - %Z')
           awk -v replacement="  # ${{ env.NETWORK }} - ${date}" \
             'NR > 1 { if (/"${{ needs.contracts-deploy.outputs.chain_id }}":/) sub(/^  #.*$/, replacement, prev); print prev } { prev = $0 } END { print prev }' \
-            ${{ env.ARCHIVIST_CONTRACTS_FILE }} > ${{ env.ARCHIVIST_CONTRACTS_FILE }}.tmp && mv ${{ env.ARCHIVIST_CONTRACTS_FILE }}.tmp ${{ env.ARCHIVIST_CONTRACTS_FILE }}
+            ${{ env.PROMETHEI_CONTRACTS_FILE }} > ${{ env.PROMETHEI_CONTRACTS_FILE }}.tmp && mv ${{ env.PROMETHEI_CONTRACTS_FILE }}.tmp ${{ env.PROMETHEI_CONTRACTS_FILE }}
 
           # Replace address
-          sed -i '/"${{ needs.contracts-deploy.outputs.chain_id }}":/{N;s/"0x.*"/"${{ needs.contracts-deploy.outputs.marketplace_address }}"/}' ${{ env.ARCHIVIST_CONTRACTS_FILE }}
+          sed -i '/"${{ needs.contracts-deploy.outputs.chain_id }}":/{N;s/"0x.*"/"${{ needs.contracts-deploy.outputs.marketplace_address }}"/}' ${{ env.PROMETHEI_CONTRACTS_FILE }}
 
           # Git status
           git status
@@ -270,7 +270,7 @@ jobs:
 
             ${{ github.actor }} triggered from a ${{ github.ref_type }} ${{ github.ref_name }} ${{ needs.contracts-deploy.outputs.contracts_ref }}
             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          base: ${{ env.ARCHIVIST_REPOSITORY_BRANCH }}
+          base: ${{ env.PROMETHEI_REPOSITORY_BRANCH }}
           title: "chore: ${{ env.NETWORK }} marketplace address updated [release]"
           body: |
             Marketplace address update for ${{ env.NETWORK }}.
